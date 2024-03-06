@@ -1,0 +1,13 @@
+apiVersion: v2
+name: minio
+version: "1.0"
+kubeVersion: ">=1.17.0"
+description: "MinIO"
+type: application
+keywords:
+  - "Minio"
+  - "storage"
+  - "S3"
+sources:
+  - https://github.com/BodhiHu/kubeflow-ops
+appVersion: "1.0"
