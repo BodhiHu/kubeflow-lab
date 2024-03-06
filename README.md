@@ -5,12 +5,12 @@ Install [Kubeflow](https://www.kubeflow.org/) as [Helm](https://helm.sh/) charts
 ## Install
 
 1. `git clone git@github.com:BodhiHu/kubeflow-ops.git`
-1. `helm install [-f your-value-overrides.yaml] kubeflow ./helm-charts`
+1. `helm install [-f your-value-overrides.yaml] kubeflow ./kubeflow-ops/helm-charts`
 
 > for **The Middle Land** 中土 mirrors:
 
 ```bash
-helm install -f values-zhong.yaml kubeflow ./helm-charts
+helm install -f ./kubeflow-ops/helm-charts/values-zhong.yaml kubeflow ./kubeflow-ops/helm-charts
 ```
 
 Start istio port-forward gateway:
