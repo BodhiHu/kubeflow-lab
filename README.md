@@ -1,6 +1,8 @@
 # Kubeflow Helm Charts
 
-Install [Kubeflow](https://www.kubeflow.org/) as [Helm](https://helm.sh/) charts.
+> Install [Kubeflow](https://www.kubeflow.org/) as [Helm](https://helm.sh/) charts.
+
+<img src="./assets/img/kf-central-ui.png" />
 
 ## Install
 
@@ -82,3 +84,28 @@ oidcScopes: "profile email groups"
 clientID: <your-dex-clientID>
 clientSecret: <your-dex-client-secret>
 ```
+
+## Usage
+
+> Please see instructions from [Kubeflow](https://www.kubeflow.org/docs) official docs:
+
+#### Training - Distributed training with PyTorch
+
+<a href="https://www.kubeflow.org/docs/components/training/overview/#distributed-training-for-tensorflow">
+  <img src="./assets/img/distributed-pytorchjob.drawio.svg" />
+</a>
+
+#### Notebooks
+<a href="https://www.kubeflow.org/docs/components/notebooks/quickstart-guide/">
+  <img src="./assets/img/kf-notebook-server.png" />
+</a>
+
+#### Pipelines
+<a href="https://www.kubeflow.org/docs/components/pipelines/v2/installation/quickstart/">
+  <img src="./assets/img/kf-pipelines-start-run.png" />
+</a>
+
+#### Serving
+<a href="https://kserve.github.io/website/0.11/modelserving/mms/multi-model-serving/">
+  <img src="./assets/img/kf-ModelMesh-Serving.png" />
+</a>
