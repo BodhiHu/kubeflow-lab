@@ -1,89 +1,78 @@
-# Kubeflow Helm Charts
-
-> Install [Kubeflow](https://www.kubeflow.org/) as [Helm](https://helm.sh/) charts.
+# Kubeflow Lab
 
 <img src="./assets/img/kf-central-ui.png" />
 
 ## Install
 
-1. `git clone git@github.com:BodhiHu/kubeflow-ops.git`
-1. `helm install [-f your-value-overrides.yaml] kubeflow ./kubeflow-ops/helm-charts`
-
-> for **The Middle Land** 中土 mirrors:
-
-```bash
-helm install -f ./kubeflow-ops/helm-charts/values-zhong.yaml kubeflow ./kubeflow-ops/helm-charts
-```
-
-Start istio port-forward gateway:
-
-```bash
-kubectl port-forward svc/istio-ingressgateway -n istio-system --address=0.0.0.0 8080:80
-```
-
-Now open `http://localhost:8080/`.
-
-### Using a private registry:
-
-If you're using private image registry:
-
-```yaml
-global:
-  imageCredentials: ""
-  useRegistryCredentials: false
-  registry: your-registry.io
-  username: your_name
-  password: Pas8Wo!d
-  email: your@email.com
-minio:
-  useKubeflowImagePullSecrets: true
-```
-
-## Uninstall
-
-Run `helm delete kubeflow` to uninstall Kubeflow.
-
-## Deploy Kubeflow in production
-
-### Setup HTTPS
-
-You ***Must*** use HTTPS to access Kubeflow web UI, except when you deploy it under `localhost`.
-
-To setup HTTPS, configure `tlsCrt` and `tlsKey` to the HTTPS `.crt` and `.key` file content (base64 encoded).
-
-### Setup Access To the UI
-
-Kubeflow uses [Istio](https://istio.io/) as the service mesh control, you should configure you cluster load balancer or ingress to redirect to istio-ingressgateway:
-
-- Through port-forward (***not recommended***):
-  - HTTP: `kubectl port-forward svc/istio-ingressgateway -n istio-system --address=0.0.0.0 8080:80`, then browse `http://ip:8080/`.
-  - HTTPS: `kubectl port-forward svc/istio-ingressgateway -n istio-system --address=0.0.0.0 443:443`, then browse `https://ip/`
-- Through [NodePort](https://kubernetes.io/zh/docs/concepts/services-networking/service/#type-nodeport): first checkout if your `ingressgateway` service is running with NodePort: `kubectl -n istio-system get svc istio-ingressgateway`. Then access the NodePort to open Kubeflow web UI.
-- Through Ingress: If Ingress is available in your cluster, then set `enableIngress: true` and
-  `kubeflowHost` to your domain name in `values.yaml`, e.g. `kubeflowHost: "kubeflow.test.info"`.
-
-The default username and password is: `user@example.com`, `12341234`
-
-### Setup Auth/SSO with Dex (Optional)
-
-If you need setup Kubeflow SingleSignOn/Auth with Dex deployment, you may need to setup below sections under `values.yaml`:
-
-1. change `dex: enabled: false`
-2. Setup below sections to connect to your Dex:
+### With official manifest
 
 ```
-oidcAuthURL: /dex/auth
-oidcProvider: http://dex.auth.svc.cluster.local:5556/dex
-oidcRedirectURL: /login/oidc
-skipAuthURI: "/dex"
-useridClaim: email
-useridHeader: kubeflow-userid
-useridPrefix: "\"\""
-oidcScopes: "profile email groups"
-
-clientID: <your-dex-clientID>
-clientSecret: <your-dex-client-secret>
+git submodule update --remote
+cd kubeflow-manifests
+while ! kustomize build example | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
 ```
+
+### Connect to your Kubeflow Cluster
+
+After installation, it will take some time for all Pods to become ready. Make sure all Pods are ready before trying to connect, otherwise you might get unexpected errors. To check that all Kubeflow-related Pods are ready, use the following commands:
+
+```sh
+kubectl get pods -n cert-manager
+kubectl get pods -n istio-system
+kubectl get pods -n auth
+kubectl get pods -n knative-eventing
+kubectl get pods -n knative-serving
+kubectl get pods -n kubeflow
+kubectl get pods -n kubeflow-user-example-com
+```
+
+#### Port-Forward
+
+The default way of accessing Kubeflow is via port-forward. This enables you to get started quickly without imposing any requirements on your environment. Run the following to port-forward Istio's Ingress-Gateway to local port `8080`:
+
+```sh
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
+```
+
+After running the command, you can access the Kubeflow Central Dashboard by doing the following:
+
+1. Open your browser and visit `http://localhost:8080`. You should get the Dex login screen.
+2. Login with the default user's credential. The default email address is `user@example.com` and the default password is `12341234`.
+
+#### NodePort / LoadBalancer / Ingress
+
+In order to connect to Kubeflow using NodePort / LoadBalancer / Ingress, you need to setup HTTPS. The reason is that many of our web apps (e.g., Tensorboard Web App, Jupyter Web App, Katib UI) use [Secure Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#restrict_access_to_cookies), so accessing Kubeflow with HTTP over a non-localhost domain does not work.
+
+Exposing your Kubeflow cluster with proper HTTPS is a process heavily dependent on your environment. For this reason, please take a look at the available [Kubeflow distributions](https://www.kubeflow.org/docs/started/installing-kubeflow/#install-a-packaged-kubeflow-distribution), which are targeted to specific environments, and select the one that fits your needs.
+
+---
+**NOTE**
+
+If you absolutely need to expose Kubeflow over HTTP, you can disable the `Secure Cookies` feature by setting the `APP_SECURE_COOKIES` environment variable to `false` in every relevant web app. This is not recommended, as it poses security risks.
+
+---
+
+### Change default user password
+
+For security reasons, we don't want to use the default password for the default Kubeflow user when installing in security-sensitive environments. Instead, you should define your own password before deploying. To define a password for the default user:
+
+1. Pick a password for the default user, with email `user@example.com`, and hash it using `bcrypt`:
+
+    ```sh
+    python3 -c 'from passlib.hash import bcrypt; import getpass; print(bcrypt.using(rounds=12, ident="2y").hash(getpass.getpass()))'
+    ```
+
+2. Edit `common/dex/base/config-map.yaml` and fill the relevant field with the hash of the password you chose:
+
+    ```yaml
+    ...
+      staticPasswords:
+      - email: user@example.com
+        hash: <enter the generated hash here>
+    ```
+
+### [Not recommended] ~~With Helm Charts~~
+~~see [helm-charts/README.md](./helm-charts/README.md)~~
 
 ## Usage
 

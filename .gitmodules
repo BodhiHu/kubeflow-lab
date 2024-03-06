@@ -1,0 +1,3 @@
+[submodule "kubeflow-manifest"]
+	path = kubeflow-manifest
+	url = github.com:BodhiHu/kubeflow-manifests.git
