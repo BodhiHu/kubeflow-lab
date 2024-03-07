@@ -9,7 +9,7 @@
 ```
 git submodule update --remote
 cd kubeflow-manifests
-while ! kustomize build example | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
+while ! kustomize build example | awk '!/well-defined/' | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
 ```
 
 ### Connect to your Kubeflow Cluster
@@ -71,8 +71,8 @@ For security reasons, we don't want to use the default password for the default 
         hash: <enter the generated hash here>
     ```
 
-### [Not recommended] ~~With Helm Charts~~
-~~see [helm-charts/README.md](./helm-charts/README.md)~~
+### [Not recommended] With Helm Charts
+see [helm-charts/README.md](./helm-charts/README.md)
 
 ## Usage
 
@@ -98,3 +98,8 @@ For security reasons, we don't want to use the default password for the default 
 <a href="https://kserve.github.io/website/0.11/modelserving/mms/multi-model-serving/">
   <img src="./assets/img/kf-ModelMesh-Serving.png" />
 </a>
+
+## References
+
+* [Install Kubeflow on Rancher](https://documentation.suse.com/trd/kubernetes/single-html/gs_rancher_kubeflow/index.html#id-installing-kubeflow)
+* [Kubeflow Manifests](https://github.com/kubeflow/manifests)
