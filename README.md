@@ -4,7 +4,7 @@
 
 ## Install
 
-### With official manifest
+### With Kustomize
 
 ```
 git submodule update --remote
@@ -12,7 +12,7 @@ cd kubeflow-manifests
 while ! kustomize build example | awk '!/well-defined/' | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
 ```
 
-### Connect to your Kubeflow Cluster
+#### Connect to your Kubeflow Cluster
 
 After installation, it will take some time for all Pods to become ready. Make sure all Pods are ready before trying to connect, otherwise you might get unexpected errors. To check that all Kubeflow-related Pods are ready, use the following commands:
 
@@ -26,7 +26,7 @@ kubectl get pods -n kubeflow
 kubectl get pods -n kubeflow-user-example-com
 ```
 
-#### Port-Forward
+##### Port-Forward
 
 The default way of accessing Kubeflow is via port-forward. This enables you to get started quickly without imposing any requirements on your environment. Run the following to port-forward Istio's Ingress-Gateway to local port `8080`:
 
@@ -39,7 +39,7 @@ After running the command, you can access the Kubeflow Central Dashboard by doin
 1. Open your browser and visit `http://localhost:8080`. You should get the Dex login screen.
 2. Login with the default user's credential. The default email address is `user@example.com` and the default password is `12341234`.
 
-#### NodePort / LoadBalancer / Ingress
+##### NodePort / LoadBalancer / Ingress
 
 In order to connect to Kubeflow using NodePort / LoadBalancer / Ingress, you need to setup HTTPS. The reason is that many of our web apps (e.g., Tensorboard Web App, Jupyter Web App, Katib UI) use [Secure Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#restrict_access_to_cookies), so accessing Kubeflow with HTTP over a non-localhost domain does not work.
 
@@ -52,7 +52,7 @@ If you absolutely need to expose Kubeflow over HTTP, you can disable the `Secure
 
 ---
 
-### Change default user password
+#### Change default user password
 
 For security reasons, we don't want to use the default password for the default Kubeflow user when installing in security-sensitive environments. Instead, you should define your own password before deploying. To define a password for the default user:
 
