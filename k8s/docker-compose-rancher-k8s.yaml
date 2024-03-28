@@ -1,0 +1,21 @@
+#
+# start rancher k8s single node cluster with compose:
+#   docker-compose -f docker-compose-rancher-k8s.yaml
+#
+# or with docker cli:
+#   docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:latest --volume ./volume:/host-volume
+#
+
+version: '3'
+
+services:
+  rancher-k8s:
+    container_name: rancher
+    image: rancher/rancher:latest
+    restart: "unless-stopped"
+    ports:
+      - 80:80
+      - 443:443
+    privileged: true
+    volumes:
+      - ./volume:/host-volume
